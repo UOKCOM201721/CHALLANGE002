@@ -1,8 +1,9 @@
 # TODO List
 # 1. create scroll bar and a frame == Done
 # 2. create edit menu == done
-# 3. implement open functions
-# 4. implement save and save_as function to open a file dialog
+# 3. implement open functions = done
+# 4. implement save and save_as function to open a file dialog = done
+# 5. implement functions for exit an kill window buttons
 
 import tkinter as tk
 # contains functions which create file dialogs
@@ -16,16 +17,16 @@ class Window:
 
     def main(self):
         # GUI container
-        wind = tk.Tk()
-        wind.title("Cpil Text Editor")
+        self.wind = tk.Tk()
+        self.wind.title("Cpil Text Editor")
         # creating the container frame
-        frame = tk.Frame(wind, width=600, height=600)
+        frame = tk.Frame(self.wind, width=600, height=600)
         frame.pack(fill='both', expand=True)
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
 
         # creating a menu item
-        menuBar = tk.Menu(wind)
+        menuBar = tk.Menu(self.wind)
 
         # creating the fileMenu
         fileMenu = tk.Menu(menuBar, tearoff=0)
@@ -54,18 +55,29 @@ class Window:
         scrollBar.grid(column=1, row=0, sticky='nsew')
         self.textarea['yscrollcommand'] = scrollBar.set
 
-        wind.config(menu=menuBar)
-        wind.mainloop()
+        self.wind.config(menu=menuBar)
+        self.wind.protocol('WM_DELETE_WINDOW', self.killWindow)
+        self.wind.mainloop()
+
+    def saveDialog(self):
+        self.subWind = tk.Toplevel(self.wind)
+        mainlable = tk.Label(self.subWind, text='Do you want to save this file?')
+        mainlable.grid(row=0, column=0, columnspan=2, padx=20, pady=2)
+        btn1 = tk.Button(self.subWind, text='Yes', command=self.saveKill)
+        btn2 = tk.Button(self.subWind, text='No', command=self.killAll)
+        btn1.grid(row=1, column=0, pady=10)
+        btn2.grid(row=1, column=1)
+        self.subWind.title('Save window')
+        self.subWind.mainloop()
+
 
     def open(self):
         self.Clear()
         self.filename = fd.askopenfile().name
-        filecontents = ''
+
         with open(self.filename, 'r+') as data:
             for line in data:
-                filecontents += line
-
-        self.textarea.insert(1.0, filecontents)
+                self.textarea.insert(1.0, line)
 
     def save(self):
         data = self.textarea.get(1.0, tk.END)
@@ -80,7 +92,8 @@ class Window:
         open(self.filename, 'w+').write(data)
 
     def killWindow(self):
-        pass
+        self.saveDialog()
+        self.wind.destroy()
 
     def undo(self):
         pass
@@ -98,6 +111,15 @@ class Window:
     def Clear(self):
         self.textarea.delete(1.0, tk.END)
         self.textarea.update()
+
+    def saveKill(self):
+        self.subWind.destroy()
+        self.save()
+        self.wind.destroy()
+
+    def killAll(self):
+        self.subWind.destroy()
+        self.wind.destroy()
 
 
 def executable():
