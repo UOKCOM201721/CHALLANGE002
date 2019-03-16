@@ -56,9 +56,12 @@ class Window:
         self.textarea['yscrollcommand'] = scrollBar.set
 
         self.wind.config(menu=menuBar)
+
+        # what to do when window closes
         self.wind.protocol('WM_DELETE_WINDOW', self.killWindow)
         self.wind.mainloop()
 
+    # dialog box when closing and exiting
     def saveDialog(self):
         self.subWind = tk.Toplevel(self.wind)
         mainlable = tk.Label(self.subWind, text='Do you want to save this file?')
@@ -70,14 +73,19 @@ class Window:
         self.subWind.title('Save window')
         self.subWind.mainloop()
 
-
+    # function to open a file
     def open(self):
-        self.Clear()
-        self.filename = fd.askopenfile().name
-
+        try:
+            self.filename = fd.askopenfile().name
+            self.Clear()
+        except _tkinter.TclError:
+            return
+        filecontents = ''
         with open(self.filename, 'r+') as data:
             for line in data:
-                self.textarea.insert(1.0, line)
+                filecontents += line
+
+        self.textarea.insert(1.0, filecontents)
 
     def save(self):
         data = self.textarea.get(1.0, tk.END)
@@ -112,11 +120,13 @@ class Window:
         self.textarea.delete(1.0, tk.END)
         self.textarea.update()
 
+    # function to save the document an destroy both windows
     def saveKill(self):
         self.subWind.destroy()
         self.save()
         self.wind.destroy()
 
+    # function to destroy both windows without saving
     def killAll(self):
         self.subWind.destroy()
         self.wind.destroy()
@@ -128,3 +138,5 @@ def executable():
 
 if __name__ == '__main__':
     executable()
+
+
